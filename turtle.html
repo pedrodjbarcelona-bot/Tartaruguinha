@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tartaruguinha — Pet Virtual</title>
+  <meta name="description" content="Cuide da sua tartaruguinha! Dê um nome, alimente arrastando a comida, brinque, dê banho e desbloqueie conquistas.">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">🐢</span>
+      <h1 id="petTitle">Tartaruguinha</h1>
+    </div>
+    <div class="hud" role="group" aria-label="HUD">
+      <div class="coins" title="Moedas"><span id="coins">0</span> 💰</div>
+      <div class="clock" title="Hora do jogo"><span id="clock">--:--</span> ⏰</div>
+      <button id="muteBtn" class="ghost" title="Som on/off" type="button" aria-label="Som">🔈</button>
+      <button id="saveBtn" class="ghost" title="Salvar agora" type="button">💾</button>
+      <!-- reset removido -->
+    </div>
+  </header>
+
+  <!-- CENÁRIO PARALLAX DE FUNDO (fora de “caixa”) -->
+  <div class="scene">
+    <div class="layer sky-grad"></div>
+    <div class="layer sun-moon">
+      <div id="sun" class="sun"></div>
+      <div id="moon" class="moon"></div>
+    </div>
+    <div id="stars" class="layer stars"></div>
+    <div class="layer clouds"></div>
+    <div class="layer mountains"></div>
+    <div class="layer water"></div>
+    <div class="layer ground"></div>
+  </div>
+
+  <main class="wrapper wrapper--free">
+    <aside class="panel left">
+      <section class="card status">
+        <h2>Status</h2>
+        <div class="bar"><label for="stat-hunger">Fome</label><progress id="stat-hunger" max="100" value="100"></progress></div>
+        <div class="bar"><label for="stat-thirst">Sede</label><progress id="stat-thirst" max="100" value="100"></progress></div>
+        <div class="bar"><label for="stat-energy">Energia</label><progress id="stat-energy" max="100" value="100"></progress></div>
+        <div class="bar"><label for="stat-hygiene">Higiene</label><progress id="stat-hygiene" max="100" value="100"></progress></div>
+        <div class="bar"><label for="stat-happy">Felicidade</label><progress id="stat-happy" max="100" value="100"></progress></div>
+        <div class="bar"><label for="stat-health">Saúde</label><progress id="stat-health" max="100" value="100"></progress></div>
+        <div class="meta">
+          <div><small>Nome:</small> <span id="petName">—</span></div>
+          <div><small>Idade:</small> <span id="age">0d</span></div>
+          <div><small>Nível:</small> <span id="level">1</span></div>
+          <div><small>XP:</small> <span id="xp">0</span></div>
+        </div>
+      </section>
+
+      <section class="card inventory">
+        <h2>Inventário (arraste para a tartaruga)</h2>
+        <div id="inventoryList" class="grid" aria-label="Inventário de itens"></div>
+      </section>
+    </aside>
+
+    <section class="stage-area">
+      <!-- área de interação -->
+      <section id="stage" class="stage" aria-live="polite">
+        <div id="turtle"
+             class="turtle drop-target"
+             aria-label="Sua tartaruguinha (solte itens aqui)"
+             title="Arraste itens e solte aqui"
+             role="button"
+             tabindex="0">
+          <!-- SVG da tartaruga mais realista -->
+          <svg viewBox="0 0 220 150" class="turtle-svg" role="img" aria-label="Tartaruga">
+            <defs>
+              <radialGradient id="gShell" cx="50%" cy="40%">
+                <stop offset="0%" stop-color="#0f7d5f"/>
+                <stop offset="60%" stop-color="#0a624c"/>
+                <stop offset="100%" stop-color="#084a3a"/>
+              </radialGradient>
+              <linearGradient id="gHead" x1="0" x2="1">
+                <stop offset="0%" stop-color="#18c58f"/>
+                <stop offset="100%" stop-color="#0aa874"/>
+              </linearGradient>
+              <filter id="shadow">
+                <feDropShadow dx="0" dy="10" stdDeviation="10" flood-opacity="0.45"/>
+              </filter>
+              <pattern id="shellPattern" width="16" height="16" patternUnits="userSpaceOnUse">
+                <path d="M0 8H16 M8 0V16" stroke="#0ea5a8" stroke-opacity=".35" stroke-width="1"/>
+              </pattern>
+            </defs>
+
+            <!-- sombra no chão -->
+            <ellipse cx="110" cy="120" rx="56" ry="12" fill="#000" opacity=".25"/>
+
+            <!-- casco -->
+            <ellipse cx="110" cy="82" rx="70" ry="45" fill="url(#gShell)" stroke="#07392f" stroke-width="4" filter="url(#shadow)"/>
+            <ellipse cx="110" cy="82" rx="60" ry="38" fill="url(#shellPattern)" opacity=".35"/>
+
+            <!-- cabeça -->
+            <g class="g-head">
+              <ellipse cx="44" cy="78" rx="26" ry="20" fill="url(#gHead)"/>
+              <circle id="eyeL" cx="38" cy="72" r="3.2" fill="#0b1220"/>
+              <circle id="eyeR" cx="50" cy="72" r="3.2" fill="#0b1220"/>
+              <path id="mouth" d="M40,84 Q44,88 50,84" fill="none" stroke="#053424" stroke-width="2" stroke-linecap="round"/>
+            </g>
+
+            <!-- patas -->
+            <ellipse class="leg" cx="78"  cy="118" rx="14" ry="8" fill="#12b985"/>
+            <ellipse class="leg" cx="146" cy="118" rx="14" ry="8" fill="#12b985"/>
+            <ellipse class="leg front" cx="78"  cy="44" rx="14" ry="8" fill="#13c092"/>
+            <ellipse class="leg front" cx="146" cy="44" rx="14" ry="8" fill="#13c092"/>
+
+            <!-- rabo -->
+            <path d="M180,82 q16,8 0,16" fill="none" stroke="#13c092" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+
+          <div id="emote" class="emote" aria-hidden="true">💚</div>
+        </div>
+
+        <div class="actions">
+          <button data-action="play" type="button">🎾 Brincar</button>
+          <button data-action="sleep" type="button">😴 Dormir</button>
+          <button id="minigameBtn" class="secondary" type="button">🐞 Mini-jogo</button>
+          <button id="shopBtn" class="secondary" type="button">🛍️ Loja</button>
+          <button id="questBtn" class="secondary" type="button">📜 Missões</button>
+        </div>
+
+        <div id="message" class="message" role="status" aria-live="polite"></div>
+      </section>
+    </section>
+
+    <aside class="panel right">
+      <section class="card quests">
+        <h2>Conquistas</h2>
+        <ul id="achievements" class="achievements" aria-live="polite"></ul>
+      </section>
+
+      <section class="card log">
+        <h2>Diário</h2>
+        <div id="log" class="log-body"></div>
+      </section>
+    </aside>
+  </main>
+
+  <!-- Modais -->
+  <dialog id="shopModal" class="modal">
+    <form method="dialog" class="modal-card">
+      <header>
+        <h3>Loja</h3>
+        <button value="cancel" class="ghost" type="submit" aria-label="Fechar loja">✖</button>
+      </header>
+      <div id="shopList" class="grid"></div>
+      <footer>
+        <small>Dica: arraste do inventário para a tartaruga para usar.</small>
+      </footer>
+    </form>
+  </dialog>
+
+  <dialog id="minigameModal" class="modal">
+    <form method="dialog" class="modal-card">
+      <header>
+        <h3>Mini-jogo: Caça-bichinhos</h3>
+        <button value="cancel" class="ghost" type="submit" aria-label="Fechar mini-jogo">✖</button>
+      </header>
+      <p>Toque/click nos bichinhos que aparecerem. Cada acerto dá moedas e felicidade. 30s!</p>
+      <div id="minigameArena" class="arena"></div>
+      <footer>
+        <button id="startMinigame" class="primary" type="submit" formaction="javascript:void(0)">Começar</button>
+        <div class="score"><span id="mgTime">30</span>s • Pontos: <span id="mgScore">0</span></div>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Modal de nome (primeiro acesso) -->
+  <dialog id="nameModal" class="modal">
+    <form method="dialog" class="modal-card">
+      <header>
+        <h3>Bem-vinda! Dê um nome à sua tartaruga</h3>
+      </header>
+      <div style="padding:1rem">
+        <input id="nameInput" type="text" placeholder="Ex: Lola" maxlength="16" required
+               style="width:100%;padding:.7rem;border-radius:.6rem;border:1px solid #344055;background:#0b1326;color:#e5e7eb">
+        <small style="display:block;color:#94a3b8;margin-top:.5rem">Você poderá mudar depois nas configurações (em breve).</small>
+      </div>
+      <footer>
+        <button id="confirmNameBtn" class="primary" type="submit" formaction="javascript:void(0)">Começar</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <dialog id="questsModal" class="modal">
+    <form method="dialog" class="modal-card">
+      <header>
+        <h3>Missões do Dia</h3>
+        <button value="cancel" class="ghost" type="submit" aria-label="Fechar missões">✖</button>
+      </header>
+      <div id="questsList" class="quests-list"></div>
+      <footer>
+        <small>Complete as missões para ganhar XP e moedas.</small>
+      </footer>
+    </form>
+  </dialog>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
